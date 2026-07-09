@@ -1,4 +1,7 @@
-const API_BASE = 'http://localhost:3001/api';
+// Use the same host as the client is accessed from, but port 3001
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:3001/api'
+  : `http://${window.location.hostname}:3001/api`;
 
 export const api = {
   async getDrills() {

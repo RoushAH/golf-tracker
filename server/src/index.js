@@ -21,6 +21,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
-app.listen(PORT, () => {
-  console.log(`🏌️  Golf Tracker Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🏌️  Golf Tracker Server running on http://0.0.0.0:${PORT}`);
+  console.log(`   Access from this computer: http://localhost:${PORT}`);
 });

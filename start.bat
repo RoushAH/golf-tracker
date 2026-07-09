@@ -47,6 +47,9 @@ echo ===============================================
 echo    Golf Tracker is Running!
 echo ===============================================
 echo.
+echo NOTE: If phone can't connect, allow Node.js
+echo       through Windows Firewall when prompted.
+echo.
 
 REM Display QR code
 node show-qr.js
