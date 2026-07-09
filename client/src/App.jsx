@@ -12,9 +12,11 @@ import SyncStatus from './components/SyncStatus/SyncStatus';
 import InstallPrompt from './components/InstallPrompt/InstallPrompt';
 import SignInButton from './components/Auth/SignInButton';
 import UserMenu from './components/Auth/UserMenu';
+import DebugPanel from './components/Debug/DebugPanel';
 import './App.css';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const DEBUG_MODE = import.meta.env.DEV || localStorage.getItem('debug_mode') === 'true';
 
 function AppContent() {
   const [view, setView] = useState('drills');
@@ -215,6 +217,7 @@ function AppContent() {
       </main>
 
       <InstallPrompt />
+      {DEBUG_MODE && <DebugPanel />}
 
       {showSignIn && (
         <div className="modal-overlay" onClick={() => setShowSignIn(false)}>

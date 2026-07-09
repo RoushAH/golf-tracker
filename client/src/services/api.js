@@ -19,6 +19,22 @@ function getUserFromStorage() {
   }
 }
 
+async function handleResponse(response, errorMessage) {
+  if (!response.ok) {
+    let details = `${response.status} ${response.statusText}`;
+    try {
+      const data = await response.json();
+      details += `: ${JSON.stringify(data)}`;
+    } catch {
+      const text = await response.text();
+      if (text) details += `: ${text}`;
+    }
+    console.error(`${errorMessage} - ${details}`);
+    throw new Error(`${errorMessage}: ${details}`);
+  }
+  return response.json();
+}
+
 export const api = {
   async signInWithGoogle(token) {
     const res = await fetch(`${API_BASE}/auth/google`, {
@@ -109,13 +125,13 @@ export const api = {
   },
 
   async createSession(session) {
+    console.log('Creating session:', session);
     const res = await fetch(`${API_BASE}/sessions`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(session)
     });
-    if (!res.ok) throw new Error('Failed to create session');
-    return res.json();
+    return handleResponse(res, 'Failed to create session');
   },
 
   async updateSession(id, session) {
@@ -137,13 +153,13 @@ export const api = {
   },
 
   async addResult(sessionId, result) {
+    console.log('Adding result:', { sessionId, result });
     const res = await fetch(`${API_BASE}/sessions/${sessionId}/results`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(result)
     });
-    if (!res.ok) throw new Error('Failed to add result');
-    return res.json();
+    return handleResponse(res, 'Failed to add result');
   },
 
   async updateResult(id, result) {
