@@ -120,41 +120,84 @@ export default function Results({ drill }) {
           {/* Visual Progress Chart */}
           <div className="progress-chart">
             {drill.scoring_type === 'made_missed' && (
-              <div className="chart-bars">
-                {progression.map((session, idx) => (
-                  <div key={session.session_id} className="chart-bar-wrapper">
-                    <div className="chart-bar-container">
-                      <div
-                        className="chart-bar"
-                        style={{ height: `${session.success_rate}%` }}
-                        title={`${session.success_rate.toFixed(1)}%`}
-                      />
-                    </div>
-                    <div className="chart-label">{progression.length - idx}</div>
+              <>
+                <div className="chart-y-axis">
+                  <div className="y-label">100%</div>
+                  <div className="y-label">75%</div>
+                  <div className="y-label">50%</div>
+                  <div className="y-label">25%</div>
+                  <div className="y-label">0%</div>
+                </div>
+                <div className="chart-container">
+                  <div className="chart-grid">
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
                   </div>
-                ))}
-              </div>
+                  <div className="chart-bars">
+                    {progression.map((session, idx) => (
+                      <div key={session.session_id} className="chart-bar-wrapper">
+                        <div className="chart-bar-container">
+                          <div
+                            className="chart-bar"
+                            style={{ height: `${session.success_rate}%` }}
+                            title={`Session ${idx + 1}: ${session.success_rate.toFixed(1)}%`}
+                          />
+                        </div>
+                        <div className="chart-label">{idx + 1}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
 
             {drill.scoring_type === 'stroke_count' && (
-              <div className="chart-bars">
-                {progression.map((session, idx) => {
-                  const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
-                  const barHeight = maxStrokes > 0 ? (session.average_strokes / maxStrokes) * 100 : 0;
-                  return (
-                    <div key={session.session_id} className="chart-bar-wrapper">
-                      <div className="chart-bar-container">
-                        <div
-                          className="chart-bar stroke-bar"
-                          style={{ height: `${barHeight}%` }}
-                          title={`${session.average_strokes.toFixed(2)} avg`}
-                        />
-                      </div>
-                      <div className="chart-label">{progression.length - idx}</div>
-                    </div>
-                  );
-                })}
-              </div>
+              <>
+                <div className="chart-y-axis">
+                  {(() => {
+                    const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
+                    const roundedMax = Math.ceil(maxStrokes);
+                    const step = roundedMax / 4;
+                    return [
+                      <div key="4" className="y-label">{roundedMax.toFixed(1)}</div>,
+                      <div key="3" className="y-label">{(roundedMax - step).toFixed(1)}</div>,
+                      <div key="2" className="y-label">{(roundedMax - step * 2).toFixed(1)}</div>,
+                      <div key="1" className="y-label">{(roundedMax - step * 3).toFixed(1)}</div>,
+                      <div key="0" className="y-label">0</div>
+                    ];
+                  })()}
+                </div>
+                <div className="chart-container">
+                  <div className="chart-grid">
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                    <div className="grid-line"></div>
+                  </div>
+                  <div className="chart-bars">
+                    {progression.map((session, idx) => {
+                      const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
+                      const barHeight = maxStrokes > 0 ? (session.average_strokes / maxStrokes) * 100 : 0;
+                      return (
+                        <div key={session.session_id} className="chart-bar-wrapper">
+                          <div className="chart-bar-container">
+                            <div
+                              className="chart-bar stroke-bar"
+                              style={{ height: `${barHeight}%` }}
+                              title={`Session ${idx + 1}: ${session.average_strokes.toFixed(2)} avg`}
+                            />
+                          </div>
+                          <div className="chart-label">{idx + 1}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
