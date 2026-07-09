@@ -11,18 +11,21 @@ export default function UserMenu({ user }) {
     }
   }
 
+  const displayName = user.name || user.username || 'User';
+  const displayId = user.username || user.email || user.id;
+
   return (
     <div className="user-menu">
       <button
         className="user-avatar"
         onClick={() => setShowMenu(!showMenu)}
-        title={user.email}
+        title={displayId}
       >
         {user.picture ? (
-          <img src={user.picture} alt={user.name || user.email} />
+          <img src={user.picture} alt={displayName} />
         ) : (
           <div className="avatar-placeholder">
-            {(user.name || user.email).charAt(0).toUpperCase()}
+            {displayName.charAt(0).toUpperCase()}
           </div>
         )}
       </button>
@@ -32,8 +35,8 @@ export default function UserMenu({ user }) {
           <div className="menu-overlay" onClick={() => setShowMenu(false)} />
           <div className="menu-dropdown">
             <div className="menu-header">
-              <div className="menu-name">{user.name || 'User'}</div>
-              <div className="menu-email">{user.email}</div>
+              <div className="menu-name">{displayName}</div>
+              <div className="menu-email">{displayId}</div>
             </div>
             <button className="menu-item sign-out-btn" onClick={handleSignOut}>
               Sign Out

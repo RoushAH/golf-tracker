@@ -55,9 +55,14 @@ function getLocalIP() {
 
 const ip = getLocalIP();
 const port = process.argv[2] || '5173';
-const url = `http://${ip}:${port}`;
+const useHttps = process.argv[3] === 'https';
+const protocol = useHttps ? 'https' : 'http';
+const url = `${protocol}://${ip}:${port}`;
 
 console.log('\n📱 Scan this QR code with your phone:\n');
 qrcode.generate(url, { small: true });
 console.log(`\n🌐 Or visit: ${url}\n`);
+if (useHttps) {
+  console.log('🔒 HTTPS enabled - Accept certificate warning on first visit');
+}
 console.log('━'.repeat(50));

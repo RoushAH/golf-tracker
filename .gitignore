@@ -4,5 +4,6 @@ build/
 .DS_Store
 *.log
 server/data/*.db
+server/certs/*.pem
 .env
 .env.local

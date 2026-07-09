@@ -25,13 +25,13 @@ export const authService = {
     }
   },
 
-  async signInWithGoogle(token) {
+  async signIn(username) {
     try {
-      const response = await api.signInWithGoogle(token);
+      const response = await api.signIn(username);
       this.setUser(response.user);
       return response.user;
     } catch (error) {
-      console.error('Failed to sign in with Google:', error);
+      console.error('Failed to sign in:', error);
       throw error;
     }
   },

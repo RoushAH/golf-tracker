@@ -1,13 +1,74 @@
 import express from 'express';
-import { OAuth2Client } from 'google-auth-library';
 import { getDatabase, saveDatabase } from '../db/schema.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const client = new OAuth2Client(CLIENT_ID);
+// Simple username-based sign in (no password)
+router.post('/signin', async (req, res) => {
+  try {
+    const { username } = req.body;
 
+    if (!username || username.trim().length === 0) {
+      return res.status(400).json({ error: 'Username required' });
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+
+    const db = await getDatabase();
+    const now = Date.now();
+
+    // Check if user exists by username
+    const result = db.exec(
+      'SELECT id, email as username, name FROM users WHERE email = ?',
+      [cleanUsername]
+    );
+
+    let userId;
+    let user;
+
+    if (result.length > 0 && result[0].values.length > 0) {
+      // Existing user - update last login
+      const row = result[0].values[0];
+      userId = row[0];
+      user = {
+        id: row[0],
+        username: row[1],
+        name: row[2] || cleanUsername
+      };
+
+      db.run(
+        'UPDATE users SET last_login_at = ? WHERE id = ?',
+        [now, userId]
+      );
+    } else {
+      // New user - create account
+      userId = uuidv4();
+      user = {
+        id: userId,
+        username: cleanUsername,
+        name: cleanUsername
+      };
+
+      db.run(
+        'INSERT INTO users (id, google_id, email, name, picture, created_at, last_login_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, cleanUsername, cleanUsername, cleanUsername, null, now, now]
+      );
+    }
+
+    saveDatabase();
+
+    res.json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    console.error('Auth error:', error);
+    res.status(500).json({ error: 'Failed to sign in' });
+  }
+});
+
+// Legacy Google OAuth endpoint (kept for compatibility)
 router.post('/google', async (req, res) => {
   try {
     const { token } = req.body;

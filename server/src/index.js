@@ -1,8 +1,9 @@
 import express from 'express';
+import https from 'https';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { initializeDatabase } from './db/schema.js';
 import drillsRouter from './routes/drills.js';
 import sessionsRouter from './routes/sessions.js';
@@ -15,6 +16,23 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Load SSL certificates
+const certPath = join(__dirname, '../certs/cert.pem');
+const keyPath = join(__dirname, '../certs/key.pem');
+const useHTTPS = existsSync(certPath) && existsSync(keyPath);
+
+let httpsOptions;
+if (useHTTPS) {
+  httpsOptions = {
+    cert: readFileSync(certPath),
+    key: readFileSync(keyPath)
+  };
+  console.log('🔒 HTTPS enabled');
+} else {
+  console.log('⚠️  No SSL certificates found, using HTTP');
+  console.log('   Run generate-cert.bat to enable HTTPS');
+}
 
 app.use(cors());
 app.use(express.json());
@@ -46,7 +64,14 @@ if (existsSync(clientBuildPath)) {
   console.log('⚠️  Client not built. Run "npm run build" in client folder or use start-prod.bat');
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🏌️  Golf Tracker Server running on http://0.0.0.0:${PORT}`);
-  console.log(`   Access from this computer: http://localhost:${PORT}`);
-});
+if (useHTTPS) {
+  https.createServer(httpsOptions, app).listen(PORT, '0.0.0.0', () => {
+    console.log(`🏌️  Golf Tracker Server running on https://0.0.0.0:${PORT}`);
+    console.log(`   Access from this computer: https://localhost:${PORT}`);
+  });
+} else {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🏌️  Golf Tracker Server running on http://0.0.0.0:${PORT}`);
+    console.log(`   Access from this computer: http://localhost:${PORT}`);
+  });
+}

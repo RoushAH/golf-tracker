@@ -57,10 +57,11 @@ echo Server serves both API and client on port 3001
 echo.
 
 REM Display QR code with port 3001
-node show-qr.js 3001
+node show-qr.js 3001 https
 
 echo.
-echo 💻 Access from this computer: http://localhost:3001
+echo 💻 Access from this computer: https://localhost:3001
+echo    (Accept security warning on first visit)
 echo 📱 Access from phone: Use QR code above
 echo.
 echo ===============================================

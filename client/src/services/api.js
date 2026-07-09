@@ -36,14 +36,13 @@ async function handleResponse(response, errorMessage) {
 }
 
 export const api = {
-  async signInWithGoogle(token) {
-    const res = await fetch(`${API_BASE}/auth/google`, {
+  async signIn(username) {
+    const res = await fetch(`${API_BASE}/auth/signin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
+      body: JSON.stringify({ username })
     });
-    if (!res.ok) throw new Error('Failed to sign in with Google');
-    return res.json();
+    return handleResponse(res, 'Failed to sign in');
   },
   async getDrills() {
     const res = await fetch(`${API_BASE}/drills`, {

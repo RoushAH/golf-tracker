@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { api } from './services/api';
 import { syncEngine } from './services/sync';
 import { storage } from './services/storage';
@@ -10,12 +9,11 @@ import DataEntry from './components/DataEntry/DataEntry';
 import Results from './components/Results/Results';
 import SyncStatus from './components/SyncStatus/SyncStatus';
 import InstallPrompt from './components/InstallPrompt/InstallPrompt';
-import SignInButton from './components/Auth/SignInButton';
+import UsernameSignIn from './components/Auth/UsernameSignIn';
 import UserMenu from './components/Auth/UserMenu';
 import DebugPanel from './components/Debug/DebugPanel';
 import './App.css';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 const DEBUG_MODE = import.meta.env.DEV || localStorage.getItem('debug_mode') === 'true';
 
 function AppContent() {
@@ -230,7 +228,7 @@ function AppContent() {
             </div>
             <div className="sign-in-body">
               <p>Sign in to sync your practice data across devices</p>
-              <SignInButton onSuccess={handleSignInSuccess} />
+              <UsernameSignIn onSuccess={handleSignInSuccess} />
               <p className="sign-in-note">
                 You can continue using the app without signing in. Your data will be saved locally on this device.
               </p>
@@ -242,10 +240,4 @@ function AppContent() {
   );
 }
 
-export default function App() {
-  return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AppContent />
-    </GoogleOAuthProvider>
-  );
-}
+export default AppContent;
