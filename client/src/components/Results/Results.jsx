@@ -165,20 +165,24 @@ export default function Results({ drill }) {
         {selectedCategory === 'overall' && drill.scoring_type === 'made_missed' && stats.by_category && (
           <div className="by-category">
             <h4>By Category</h4>
-            {Object.entries(stats.by_category).map(([cat, data]) => (
-              <div key={cat} className="category-stat">
-                <div className="category-name">{cat}</div>
-                <div className="category-bar">
-                  <div
-                    className="category-fill"
-                    style={{ width: `${data.success_rate}%` }}
-                  />
+            {drill.categories.map(cat => {
+              const data = stats.by_category[cat];
+              if (!data) return null;
+              return (
+                <div key={cat} className="category-stat">
+                  <div className="category-name">{cat}</div>
+                  <div className="category-bar">
+                    <div
+                      className="category-fill"
+                      style={{ width: `${data.success_rate}%` }}
+                    />
+                  </div>
+                  <div className="category-details">
+                    {data.made}/{data.attempts} ({data.success_rate.toFixed(1)}%)
+                  </div>
                 </div>
-                <div className="category-details">
-                  {data.made}/{data.attempts} ({data.success_rate.toFixed(1)}%)
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
