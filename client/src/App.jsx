@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { api } from './services/api';
+import { syncEngine } from './services/sync';
+import { storage } from './services/storage';
 import DrillList from './components/DrillManager/DrillList';
 import DrillForm from './components/DrillManager/DrillForm';
 import DataEntry from './components/DataEntry/DataEntry';
 import Results from './components/Results/Results';
+import SyncStatus from './components/SyncStatus/SyncStatus';
 import './App.css';
 
 function App() {
@@ -14,13 +17,53 @@ function App() {
   const [showDrillForm, setShowDrillForm] = useState(false);
 
   useEffect(() => {
+    initializeApp();
+
+    return () => {
+      syncEngine.stop();
+    };
+  }, []);
+
+  async function initializeApp() {
+    // Initialize sync engine
+    await syncEngine.init();
+
+    // Load drills
+    await loadDrills();
+
+    // Listen for sync events to reload data
+    window.addEventListener('sync-complete', loadDrills);
+  }
+
+  useEffect(() => {
     loadDrills();
   }, []);
 
   async function loadDrills() {
     try {
-      const data = await api.getDrills();
-      setDrills(data);
+      const isOnline = navigator.onLine;
+
+      if (isOnline) {
+        try {
+          // Try to get from server
+          const data = await api.getDrills();
+          // Cache in local storage
+          for (const drill of data) {
+            await storage.saveDrill(drill);
+          }
+          setDrills(data);
+        } catch (error) {
+          console.warn('Failed to fetch from server, using cached data');
+          // Fallback to local storage
+          const data = await storage.getDrills();
+          setDrills(data);
+        }
+      } else {
+        // Use local storage when offline
+        const data = await storage.getDrills();
+        setDrills(data);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Failed to load drills:', error);
@@ -71,7 +114,10 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>⛳ Golf Tracker</h1>
+        <div className="header-top">
+          <h1>⛳ Golf Tracker</h1>
+          <SyncStatus />
+        </div>
         <nav className="app-nav">
           <button
             className={view === 'drills' ? 'active' : ''}

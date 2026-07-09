@@ -11,8 +11,15 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .app-header h1 {
-  margin: 0 0 1rem 0;
+  margin: 0;
   font-size: 1.5rem;
 }
 
