@@ -10,8 +10,8 @@ if not exist "server\certs\" mkdir server\certs
 echo Generating private key and certificate...
 echo.
 
-REM Generate private key and certificate in one command
-openssl req -x509 -newkey rsa:4096 -keyout server\certs\key.pem -out server\certs\cert.pem -days 365 -nodes -subj "/CN=localhost/O=Golf Tracker/C=US"
+REM Generate private key and certificate using config file
+openssl req -x509 -newkey rsa:2048 -keyout server\certs\key.pem -out server\certs\cert.pem -days 365 -nodes -config server\certs\openssl.cnf -extensions v3_ca
 
 if errorlevel 1 (
     echo.
