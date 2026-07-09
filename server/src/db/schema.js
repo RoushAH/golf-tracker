@@ -59,6 +59,7 @@ export async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       drill_type_id TEXT NOT NULL,
+      user_id TEXT,
       started_at INTEGER NOT NULL,
       completed_at INTEGER,
       notes TEXT,
@@ -67,7 +68,8 @@ export async function initializeDatabase() {
       sync_version INTEGER DEFAULT 0,
       device_id TEXT,
       deleted_at INTEGER,
-      FOREIGN KEY (drill_type_id) REFERENCES drill_types(id)
+      FOREIGN KEY (drill_type_id) REFERENCES drill_types(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
   `);
 
@@ -96,6 +98,21 @@ export async function initializeDatabase() {
       last_pull_version INTEGER DEFAULT 0
     );
   `);
+
+  database.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      google_id TEXT UNIQUE NOT NULL,
+      email TEXT NOT NULL,
+      name TEXT,
+      picture TEXT,
+      created_at INTEGER NOT NULL,
+      last_login_at INTEGER NOT NULL
+    );
+  `);
+
+  database.run('CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)');
+  database.run('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
 
   database.run('CREATE INDEX IF NOT EXISTS idx_sessions_drill_type ON sessions(drill_type_id)');
   database.run('CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at)');

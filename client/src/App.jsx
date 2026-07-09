@@ -1,21 +1,29 @@
 import { useState, useEffect } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { api } from './services/api';
 import { syncEngine } from './services/sync';
 import { storage } from './services/storage';
+import { authService } from './services/auth';
 import DrillList from './components/DrillManager/DrillList';
 import DrillForm from './components/DrillManager/DrillForm';
 import DataEntry from './components/DataEntry/DataEntry';
 import Results from './components/Results/Results';
 import SyncStatus from './components/SyncStatus/SyncStatus';
 import InstallPrompt from './components/InstallPrompt/InstallPrompt';
+import SignInButton from './components/Auth/SignInButton';
+import UserMenu from './components/Auth/UserMenu';
 import './App.css';
 
-function App() {
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
+function AppContent() {
   const [view, setView] = useState('drills');
   const [drills, setDrills] = useState([]);
   const [selectedDrill, setSelectedDrill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDrillForm, setShowDrillForm] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showSignIn, setShowSignIn] = useState(false);
 
   useEffect(() => {
     initializeApp();
@@ -26,6 +34,10 @@ function App() {
   }, []);
 
   async function initializeApp() {
+    // Check for existing user
+    const existingUser = authService.getUser();
+    setUser(existingUser);
+
     // Initialize sync engine
     await syncEngine.init();
 
@@ -34,6 +46,12 @@ function App() {
 
     // Listen for sync events to reload data
     window.addEventListener('sync-complete', loadDrills);
+  }
+
+  function handleSignInSuccess(user) {
+    setUser(user);
+    setShowSignIn(false);
+    loadDrills();
   }
 
   useEffect(() => {
@@ -117,7 +135,16 @@ function App() {
       <header className="app-header">
         <div className="header-top">
           <h1>⛳ Golf Tracker</h1>
-          <SyncStatus />
+          <div className="header-right">
+            <SyncStatus />
+            {user ? (
+              <UserMenu user={user} />
+            ) : (
+              <button className="btn-sign-in" onClick={() => setShowSignIn(true)}>
+                Sign In
+              </button>
+            )}
+          </div>
         </div>
         <nav className="app-nav">
           <button
@@ -188,8 +215,34 @@ function App() {
       </main>
 
       <InstallPrompt />
+
+      {showSignIn && (
+        <div className="modal-overlay" onClick={() => setShowSignIn(false)}>
+          <div className="modal-content sign-in-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Sign In</h3>
+              <button className="close-btn" onClick={() => setShowSignIn(false)}>
+                ×
+              </button>
+            </div>
+            <div className="sign-in-body">
+              <p>Sign in to sync your practice data across devices</p>
+              <SignInButton onSuccess={handleSignInSuccess} />
+              <p className="sign-in-note">
+                You can continue using the app without signing in. Your data will be saved locally on this device.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AppContent />
+    </GoogleOAuthProvider>
+  );
+}

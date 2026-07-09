@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@golf-tracker/shared": "*",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
+    "express-session": "^1.19.0",
+    "google-auth-library": "^10.9.0",
     "sql.js": "^1.10.2",
-    "uuid": "^9.0.1",
-    "cors": "^2.8.5"
+    "uuid": "^9.0.1"
   }
 }

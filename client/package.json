@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@golf-tracker/shared": "*",
+    "@react-oauth/google": "^0.13.5",
     "idb": "^7.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

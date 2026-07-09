@@ -91,7 +91,7 @@ router.delete('/:id', async (req, res) => {
 
 router.get('/:id/stats', async (req, res) => {
   try {
-    const stats = await drillQueries.getStats(req.params.id);
+    const stats = await drillQueries.getStats(req.params.id, req.userId);
     res.json(stats);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -101,7 +101,7 @@ router.get('/:id/stats', async (req, res) => {
 router.get('/:id/progression', async (req, res) => {
   try {
     const category = req.query.category || null;
-    const progression = await drillQueries.getProgression(req.params.id, category);
+    const progression = await drillQueries.getProgression(req.params.id, category, req.userId);
     res.json(progression);
   } catch (error) {
     res.status(500).json({ error: error.message });

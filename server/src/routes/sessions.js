@@ -33,6 +33,7 @@ router.post('/', async (req, res) => {
     const session = {
       id: req.body.id || uuidv4(),
       drill_type_id: req.body.drill_type_id,
+      user_id: req.userId || req.body.user_id || null,
       started_at: req.body.started_at || now,
       completed_at: req.body.completed_at || null,
       notes: req.body.notes || null,

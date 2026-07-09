@@ -56,15 +56,21 @@ export const drillQueries = {
     saveDatabase();
   },
 
-  async getStats(drillId) {
+  async getStats(drillId, userId = null) {
     const db = await getDatabase();
-    const sessionsResult = db.exec(
-      `SELECT s.id, s.started_at
+    let query = `SELECT s.id, s.started_at
        FROM sessions s
-       WHERE s.drill_type_id = ? AND s.deleted_at IS NULL
-       ORDER BY s.started_at DESC`,
-      [drillId]
-    );
+       WHERE s.drill_type_id = ? AND s.deleted_at IS NULL`;
+    let params = [drillId];
+
+    if (userId) {
+      query += ' AND s.user_id = ?';
+      params.push(userId);
+    }
+
+    query += ' ORDER BY s.started_at DESC';
+
+    const sessionsResult = db.exec(query, params);
     const sessions = rowsToObjects(sessionsResult);
 
     if (sessions.length === 0) {
@@ -132,15 +138,21 @@ export const drillQueries = {
     };
   },
 
-  async getProgression(drillId, category = null) {
+  async getProgression(drillId, category = null, userId = null) {
     const db = await getDatabase();
-    const sessionsResult = db.exec(
-      `SELECT s.id, s.started_at
+    let query = `SELECT s.id, s.started_at
        FROM sessions s
-       WHERE s.drill_type_id = ? AND s.deleted_at IS NULL
-       ORDER BY s.started_at ASC`,
-      [drillId]
-    );
+       WHERE s.drill_type_id = ? AND s.deleted_at IS NULL`;
+    let params = [drillId];
+
+    if (userId) {
+      query += ' AND s.user_id = ?';
+      params.push(userId);
+    }
+
+    query += ' ORDER BY s.started_at ASC';
+
+    const sessionsResult = db.exec(query, params);
     const sessions = rowsToObjects(sessionsResult);
 
     const drill = await this.getById(drillId);
@@ -235,9 +247,9 @@ export const sessionQueries = {
   async create(session) {
     const db = await getDatabase();
     db.run(
-      `INSERT INTO sessions (id, drill_type_id, started_at, completed_at, notes, created_at, updated_at, sync_version, device_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [session.id, session.drill_type_id, session.started_at, session.completed_at || null, session.notes || null, session.created_at, session.updated_at, session.sync_version || 0, session.device_id]
+      `INSERT INTO sessions (id, drill_type_id, user_id, started_at, completed_at, notes, created_at, updated_at, sync_version, device_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [session.id, session.drill_type_id, session.user_id || null, session.started_at, session.completed_at || null, session.notes || null, session.created_at, session.updated_at, session.sync_version || 0, session.device_id]
     );
     saveDatabase();
     return session;
@@ -363,9 +375,9 @@ export const syncQueries = {
       if (session.updated_at > existing.updated_at) {
         db.run(
           `UPDATE sessions
-           SET drill_type_id = ?, started_at = ?, completed_at = ?, notes = ?, updated_at = ?, sync_version = ?, device_id = ?, deleted_at = ?
+           SET drill_type_id = ?, user_id = ?, started_at = ?, completed_at = ?, notes = ?, updated_at = ?, sync_version = ?, device_id = ?, deleted_at = ?
            WHERE id = ?`,
-          [session.drill_type_id, session.started_at, session.completed_at || null, session.notes || null, session.updated_at, session.sync_version, session.device_id, session.deleted_at || null, session.id]
+          [session.drill_type_id, session.user_id || null, session.started_at, session.completed_at || null, session.notes || null, session.updated_at, session.sync_version, session.device_id, session.deleted_at || null, session.id]
         );
         saveDatabase();
       }

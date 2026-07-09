@@ -18,9 +18,29 @@
   margin-bottom: 1rem;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.btn-sign-in {
+  padding: 0.5rem 1rem;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background 0.2s;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.btn-sign-in:hover {
+  background: rgba(255,255,255,0.3);
 }
 
 .app-nav {
@@ -141,4 +161,24 @@
 
 .close-btn:hover {
   background: #f5f5f5;
+}
+
+.sign-in-modal {
+  max-width: 450px;
+}
+
+.sign-in-body {
+  padding: 2rem;
+  text-align: center;
+}
+
+.sign-in-body p {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+}
+
+.sign-in-note {
+  margin-top: 1.5rem !important;
+  font-size: 0.875rem;
+  color: #999;
 }
