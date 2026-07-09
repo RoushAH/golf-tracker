@@ -43,12 +43,6 @@ REM Wait for server to be ready
 echo Waiting for server to start...
 timeout /t 4 /nobreak > nul
 
-echo [4/4] Starting production client server...
-start /MIN cmd /c "cd client && npx serve -s dist -l 5173"
-
-REM Wait for client to start
-timeout /t 3 /nobreak > nul
-
 echo.
 echo ===============================================
 echo    Golf Tracker is Running! (Production)
@@ -59,13 +53,15 @@ echo   - Offline mode
 echo   - Install to home screen
 echo   - Background sync
 echo.
+echo Server serves both API and client on port 3001
+echo.
 
-REM Display QR code
-node show-qr.js
+REM Display QR code with port 3001
+node show-qr.js 3001
 
 echo.
-echo 💻 Server: http://localhost:3001
-echo 🌐 Client: http://localhost:5173
+echo 💻 Access from this computer: http://localhost:3001
+echo 📱 Access from phone: Use QR code above
 echo.
 echo ===============================================
 echo.
@@ -77,14 +73,9 @@ pause >nul
 echo.
 echo Stopping Golf Tracker...
 
-REM Kill Node.js processes on the specific ports
+REM Kill Node.js processes on port 3001
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3001 ^| findstr LISTENING') do (
     echo Stopping server process %%a
-    taskkill /F /PID %%a >nul 2>&1
-)
-
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5173 ^| findstr LISTENING') do (
-    echo Stopping client process %%a
     taskkill /F /PID %%a >nul 2>&1
 )
 

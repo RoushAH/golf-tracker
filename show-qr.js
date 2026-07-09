@@ -54,7 +54,8 @@ function getLocalIP() {
 }
 
 const ip = getLocalIP();
-const url = `http://${ip}:5173`;
+const port = process.argv[2] || '5173';
+const url = `http://${ip}:${port}`;
 
 console.log('\n📱 Scan this QR code with your phone:\n');
 qrcode.generate(url, { small: true });

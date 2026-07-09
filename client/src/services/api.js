@@ -1,7 +1,5 @@
-// Use the same host as the client is accessed from, but port 3001
-const API_BASE = window.location.hostname === 'localhost'
-  ? 'http://localhost:3001/api'
-  : `http://${window.location.hostname}:3001/api`;
+// Use the same origin for API calls (server serves both API and client)
+const API_BASE = `${window.location.origin}/api`;
 
 function getHeaders() {
   const headers = { 'Content-Type': 'application/json' };
