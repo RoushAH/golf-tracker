@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 echo ===============================================
 echo    Golf Tracker PWA
 echo ===============================================
@@ -11,7 +13,9 @@ if not exist "node_modules\" (
     if errorlevel 1 (
         echo.
         echo ERROR: Failed to install dependencies
-        pause
+        echo.
+        echo Press Enter to exit...
+        pause >nul
         exit /b 1
     )
     echo.
@@ -33,24 +37,41 @@ if errorlevel 1 (
 )
 
 echo [3/3] Starting client...
-echo.
-echo Opening browser...
-echo.
-echo Server running at: http://localhost:3001
-echo Client running at: http://localhost:5173
-echo.
-echo Press Ctrl+C to stop both server and client
-echo.
+start /MIN cmd /c "npm run client"
 
-REM Start client (this will block and open browser)
-call npm run client
-
-REM Cleanup when client stops
-echo.
-echo Stopping server...
-taskkill /F /FI "WINDOWTITLE eq *server*" > nul 2>&1
-taskkill /F /FI "COMMANDLINE eq *npm run server*" > nul 2>&1
+REM Wait for client to start
+timeout /t 3 /nobreak > nul
 
 echo.
-echo Golf Tracker stopped.
+echo ===============================================
+echo    Golf Tracker is Running!
+echo ===============================================
+echo.
+
+REM Display QR code
+node show-qr.js
+
+echo.
+echo 💻 Server: http://localhost:3001
+echo 🌐 Client: http://localhost:5173
+echo.
+echo ===============================================
+echo.
+echo Press Enter to stop the application...
+
+REM Wait for user to press Enter
+pause >nul
+
+echo.
+echo Stopping Golf Tracker...
+
+REM Kill server and client processes
+taskkill /F /FI "WINDOWTITLE eq *npm run server*" >nul 2>&1
+taskkill /F /FI "WINDOWTITLE eq *npm run client*" >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":3001" ^| find "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":5173" ^| find "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
+
+echo.
+echo ✓ Golf Tracker stopped.
+echo.
 pause
