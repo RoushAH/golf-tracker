@@ -7,6 +7,7 @@ import DrillForm from './components/DrillManager/DrillForm';
 import DataEntry from './components/DataEntry/DataEntry';
 import Results from './components/Results/Results';
 import SyncStatus from './components/SyncStatus/SyncStatus';
+import InstallPrompt from './components/InstallPrompt/InstallPrompt';
 import './App.css';
 
 function App() {
@@ -185,6 +186,8 @@ function App() {
           <Results drill={selectedDrill} />
         )}
       </main>
+
+      <InstallPrompt />
     </div>
   );
 }

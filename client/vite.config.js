@@ -7,45 +7,34 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'Golf Tracker',
-        short_name: 'Golf',
-        description: 'Track your golf chipping and putting practice',
-        theme_color: '#2e7d32',
-        background_color: '#ffffff',
-        display: 'standalone',
-        icons: [
-          {
-            src: '/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
+      includeAssets: ['*.png', 'favicon.ico'],
+      manifest: false, // Use public/manifest.json instead
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:3001\/api\/.*/i,
+            urlPattern: /^https?:\/\/.*:3001\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
+              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
               },
               cacheableResponse: {
                 statuses: [0, 200]
               }
             }
           }
-        ]
+        ],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module'
       }
     })
   ],
