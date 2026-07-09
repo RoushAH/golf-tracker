@@ -101,6 +101,23 @@ export const api = {
     return res.json();
   },
 
+  async updateResult(id, result) {
+    const res = await fetch(`${API_BASE}/sessions/results/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result)
+    });
+    if (!res.ok) throw new Error('Failed to update result');
+    return res.json();
+  },
+
+  async deleteResult(id) {
+    const res = await fetch(`${API_BASE}/sessions/results/${id}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) throw new Error('Failed to delete result');
+  },
+
   async sync(deviceId, lastSyncAt, changes) {
     const res = await fetch(`${API_BASE}/sync`, {
       method: 'POST',

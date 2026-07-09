@@ -43,6 +43,32 @@ export default function DataEntry({ drill, onComplete }) {
     }
   }
 
+  async function handleEditResult(index, newOutcome) {
+    const result = results[index];
+    try {
+      await api.updateResult(result.id, { outcome: newOutcome });
+      const newResults = [...results];
+      newResults[index] = { ...result, outcome: newOutcome, updated_at: Date.now() };
+      setResults(newResults);
+    } catch (error) {
+      console.error('Failed to update result:', error);
+      alert('Failed to update. Try again.');
+    }
+  }
+
+  async function handleDeleteResult(index) {
+    const result = results[index];
+    if (!confirm('Delete this result?')) return;
+
+    try {
+      await api.deleteResult(result.id);
+      setResults(results.filter((_, i) => i !== index));
+    } catch (error) {
+      console.error('Failed to delete result:', error);
+      alert('Failed to delete. Try again.');
+    }
+  }
+
   async function handleComplete() {
     if (results.length === 0) {
       alert('Record at least one result before completing');
@@ -57,6 +83,7 @@ export default function DataEntry({ drill, onComplete }) {
       onComplete();
     } catch (error) {
       console.error('Failed to complete session:', error);
+      alert('Failed to complete session: ' + error.message);
       setIsCompleting(false);
     }
   }
@@ -74,7 +101,6 @@ export default function DataEntry({ drill, onComplete }) {
 
   if (drill.scoring_type === 'stroke_count') {
     const totalBalls = drill.metadata?.total_balls || 9;
-    const ballsRemaining = totalBalls - results.length;
 
     return (
       <div className="data-entry">
@@ -86,37 +112,59 @@ export default function DataEntry({ drill, onComplete }) {
         <div className="stroke-count-entry">
           <div className="ball-progress">
             <div className="progress-text">
-              Ball {results.length + 1} of {totalBalls}
+              {results.length < totalBalls ? (
+                <>Ball {results.length + 1} of {totalBalls}</>
+              ) : (
+                <>All {totalBalls} balls complete!</>
+              )}
             </div>
             <div className="progress-bar">
               <div
                 className="progress-fill"
-                style={{ width: `${(results.length / totalBalls) * 100}%` }}
+                style={{ width: `${Math.min((results.length / totalBalls) * 100, 100)}%` }}
               />
             </div>
           </div>
 
-          <div className="stroke-buttons">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(strokes => (
-              <button
-                key={strokes}
-                className="stroke-btn"
-                onClick={() => handleRecord(strokes.toString())}
-                disabled={results.length >= totalBalls}
-              >
-                {strokes}
-              </button>
-            ))}
-          </div>
+          {results.length < totalBalls && (
+            <div className="stroke-buttons">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(strokes => (
+                <button
+                  key={strokes}
+                  className="stroke-btn"
+                  onClick={() => handleRecord(strokes.toString())}
+                >
+                  {strokes}
+                </button>
+              ))}
+            </div>
+          )}
 
           {results.length > 0 && (
             <div className="results-summary">
               <h3>Results</h3>
-              <div className="results-grid">
+              <div className="results-list">
                 {results.map((r, idx) => (
-                  <div key={r.id} className="result-item">
-                    <span>Ball {idx + 1}:</span>
-                    <strong>{r.outcome} strokes</strong>
+                  <div key={r.id} className="result-row">
+                    <span className="ball-label">Ball {idx + 1}:</span>
+                    <div className="result-edit-group">
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map(strokes => (
+                        <button
+                          key={strokes}
+                          className={`mini-stroke-btn ${r.outcome === strokes.toString() ? 'selected' : ''}`}
+                          onClick={() => handleEditResult(idx, strokes.toString())}
+                        >
+                          {strokes}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      className="delete-result-btn"
+                      onClick={() => handleDeleteResult(idx)}
+                      title="Delete"
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>
@@ -126,7 +174,7 @@ export default function DataEntry({ drill, onComplete }) {
             </div>
           )}
 
-          {results.length >= totalBalls && (
+          {results.length > 0 && (
             <button
               className="btn-primary btn-complete"
               onClick={handleComplete}
@@ -200,6 +248,26 @@ export default function DataEntry({ drill, onComplete }) {
               </div>
               <div className="stat-label">Success</div>
             </div>
+          </div>
+        )}
+
+        {categoryResults.length > 0 && (
+          <div className="results-list-made-missed">
+            <h4>Recent ({currentCategory})</h4>
+            {categoryResults.slice(-5).reverse().map((r, idx) => (
+              <div key={r.id} className="result-row-inline">
+                <span className={`outcome-badge ${r.outcome}`}>
+                  {r.outcome === 'made' ? '✓' : '×'}
+                </span>
+                <button
+                  className="delete-result-btn-inline"
+                  onClick={() => handleDeleteResult(results.indexOf(r))}
+                  title="Delete"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

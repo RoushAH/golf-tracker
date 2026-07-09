@@ -26,6 +26,18 @@ export default function Results({ drill }) {
     }
   }
 
+  async function handleDeleteSession(sessionId) {
+    if (!confirm('Delete this practice session? This cannot be undone.')) return;
+
+    try {
+      await api.deleteSession(sessionId);
+      await loadResults();
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      alert('Failed to delete session');
+    }
+  }
+
   if (loading) {
     return <div className="loading">Loading results...</div>;
   }
@@ -107,28 +119,37 @@ export default function Results({ drill }) {
           <div className="progression-list">
             {progression.map((session, idx) => (
               <div key={session.session_id} className="session-item">
-                <div className="session-number">Session {progression.length - idx}</div>
-                <div className="session-date">
-                  {new Date(session.started_at).toLocaleDateString()}
+                <div className="session-info">
+                  <div className="session-number">Session {progression.length - idx}</div>
+                  <div className="session-date">
+                    {new Date(session.started_at).toLocaleDateString()}
+                  </div>
+                  <div className="session-stats">
+                    {drill.scoring_type === 'made_missed' && (
+                      <>
+                        <span>{session.total_made}/{session.total_attempts}</span>
+                        <span className="success-rate">
+                          {session.success_rate.toFixed(1)}%
+                        </span>
+                      </>
+                    )}
+                    {drill.scoring_type === 'stroke_count' && (
+                      <>
+                        <span>{session.total_strokes} strokes</span>
+                        <span className="avg-strokes">
+                          {session.average_strokes.toFixed(2)} avg
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="session-stats">
-                  {drill.scoring_type === 'made_missed' && (
-                    <>
-                      <span>{session.total_made}/{session.total_attempts}</span>
-                      <span className="success-rate">
-                        {session.success_rate.toFixed(1)}%
-                      </span>
-                    </>
-                  )}
-                  {drill.scoring_type === 'stroke_count' && (
-                    <>
-                      <span>{session.total_strokes} strokes</span>
-                      <span className="avg-strokes">
-                        {session.average_strokes.toFixed(2)} avg
-                      </span>
-                    </>
-                  )}
-                </div>
+                <button
+                  className="delete-session-btn"
+                  onClick={() => handleDeleteSession(session.session_id)}
+                  title="Delete session"
+                >
+                  🗑️
+                </button>
               </div>
             ))}
           </div>
