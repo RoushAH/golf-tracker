@@ -1,0 +1,11 @@
+{
+  "name": "@golf-tracker/shared",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/types.ts",
+  "types": "./src/types.ts",
+  "dependencies": {
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  }
+}

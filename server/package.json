@@ -1,0 +1,17 @@
+{
+  "name": "@golf-tracker/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@golf-tracker/shared": "*",
+    "express": "^4.18.2",
+    "sql.js": "^1.10.2",
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5"
+  }
+}
