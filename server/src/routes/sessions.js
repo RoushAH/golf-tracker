@@ -57,6 +57,7 @@ router.put('/:id', async (req, res) => {
     }
     res.json(updated);
   } catch (error) {
+    console.error('Session update error:', error);
     res.status(500).json({ error: error.message });
   }
 });

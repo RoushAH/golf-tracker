@@ -233,11 +233,23 @@ export const sessionQueries = {
 
   async update(id, session) {
     const db = await getDatabase();
+
+    // Get existing session to merge with updates
+    const existing = await this.getById(id);
+    if (!existing) {
+      throw new Error('Session not found');
+    }
+
+    const updatedSession = {
+      completed_at: session.completed_at !== undefined ? session.completed_at : existing.completed_at,
+      notes: session.notes !== undefined ? session.notes : existing.notes
+    };
+
     db.run(
       `UPDATE sessions
        SET completed_at = ?, notes = ?, updated_at = ?
        WHERE id = ? AND deleted_at IS NULL`,
-      [session.completed_at, session.notes, Date.now(), id]
+      [updatedSession.completed_at, updatedSession.notes, Date.now(), id]
     );
     saveDatabase();
     return await this.getById(id);
