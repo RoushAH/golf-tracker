@@ -76,7 +76,7 @@ export default function DebugPanel() {
   async function checkIndexedDB() {
     try {
       const dbs = await indexedDB.databases();
-      const golfDb = dbs.find(db => db.name === 'golf_tracker');
+      const golfDb = dbs.find(db => db.name === 'golf_tracker_local');
       if (golfDb) {
         setDbStatus(`✅ v${golfDb.version}`);
       } else {

@@ -40,6 +40,9 @@ function saveDatabase() {
 export async function initializeDatabase() {
   const database = await getDatabase();
 
+  // Run migrations
+  await runMigrations(database);
+
   database.run(`
     CREATE TABLE IF NOT EXISTS drill_types (
       id TEXT PRIMARY KEY,
@@ -123,6 +126,22 @@ export async function initializeDatabase() {
 
   await seedDefaultDrills();
   saveDatabase();
+}
+
+async function runMigrations(database) {
+  // Check if user_id column exists in sessions table
+  const tableInfo = database.exec("PRAGMA table_info(sessions)");
+
+  if (tableInfo.length > 0) {
+    const columns = tableInfo[0].values.map(row => row[1]); // column name is at index 1
+
+    if (!columns.includes('user_id')) {
+      console.log('🔧 Running migration: Adding user_id to sessions table');
+      database.run('ALTER TABLE sessions ADD COLUMN user_id TEXT');
+      saveDatabase();
+      console.log('✓ Migration complete');
+    }
+  }
 }
 
 async function seedDefaultDrills() {
