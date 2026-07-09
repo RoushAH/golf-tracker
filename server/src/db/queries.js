@@ -132,7 +132,7 @@ export const drillQueries = {
     };
   },
 
-  async getProgression(drillId) {
+  async getProgression(drillId, category = null) {
     const db = await getDatabase();
     const sessionsResult = db.exec(
       `SELECT s.id, s.started_at
@@ -147,11 +147,23 @@ export const drillQueries = {
     const progression = [];
 
     for (const session of sessions) {
-      const resultsResult = db.exec(
-        'SELECT * FROM results WHERE session_id = ? AND deleted_at IS NULL ORDER BY sequence',
-        [session.id]
-      );
+      let resultsQuery = 'SELECT * FROM results WHERE session_id = ? AND deleted_at IS NULL';
+      let params = [session.id];
+
+      if (category) {
+        resultsQuery += ' AND category = ?';
+        params.push(category);
+      }
+
+      resultsQuery += ' ORDER BY sequence';
+
+      const resultsResult = db.exec(resultsQuery, params);
       const results = rowsToObjects(resultsResult);
+
+      // Skip sessions with no results for this category
+      if (category && results.length === 0) {
+        continue;
+      }
 
       if (drill.scoring_type === 'made_missed') {
         const totalAttempts = results.length;

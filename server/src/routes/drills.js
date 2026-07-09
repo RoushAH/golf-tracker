@@ -100,7 +100,8 @@ router.get('/:id/stats', async (req, res) => {
 
 router.get('/:id/progression', async (req, res) => {
   try {
-    const progression = await drillQueries.getProgression(req.params.id);
+    const category = req.query.category || null;
+    const progression = await drillQueries.getProgression(req.params.id, category);
     res.json(progression);
   } catch (error) {
     res.status(500).json({ error: error.message });

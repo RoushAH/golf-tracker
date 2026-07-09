@@ -14,6 +14,42 @@
   font-size: 1rem;
 }
 
+.category-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+}
+
+.filter-pill {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  color: #333;
+}
+
+.filter-pill:hover:not(.disabled) {
+  border-color: #2e7d32;
+  background: #f1f8f4;
+}
+
+.filter-pill.active {
+  background: #2e7d32;
+  color: white;
+  border-color: #2e7d32;
+}
+
+.filter-pill.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: #999;
+}
+
 .stats-overview {
   background: white;
   padding: 1.5rem;

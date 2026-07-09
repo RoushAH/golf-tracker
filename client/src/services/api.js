@@ -49,8 +49,11 @@ export const api = {
     return res.json();
   },
 
-  async getDrillProgression(id) {
-    const res = await fetch(`${API_BASE}/drills/${id}/progression`);
+  async getDrillProgression(id, category = null) {
+    const url = category
+      ? `${API_BASE}/drills/${id}/progression?category=${encodeURIComponent(category)}`
+      : `${API_BASE}/drills/${id}/progression`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch drill progression');
     return res.json();
   },

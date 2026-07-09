@@ -7,23 +7,38 @@ export default function Results({ drill }) {
   const [stats, setStats] = useState(null);
   const [progression, setProgression] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('overall');
 
   useEffect(() => {
     loadResults();
   }, [drill.id]);
 
+  useEffect(() => {
+    if (stats) {
+      loadProgression();
+    }
+  }, [selectedCategory]);
+
   async function loadResults() {
     try {
-      const [statsData, progressionData] = await Promise.all([
-        api.getDrillStats(drill.id),
-        api.getDrillProgression(drill.id)
-      ]);
+      const statsData = await api.getDrillStats(drill.id);
       setStats(statsData);
-      setProgression(progressionData);
+      setSelectedCategory('overall');
+      await loadProgression();
       setLoading(false);
     } catch (error) {
       console.error('Failed to load results:', error);
       setLoading(false);
+    }
+  }
+
+  async function loadProgression() {
+    try {
+      const category = selectedCategory === 'overall' ? null : selectedCategory;
+      const progressionData = await api.getDrillProgression(drill.id, category);
+      setProgression(progressionData);
+    } catch (error) {
+      console.error('Failed to load progression:', error);
     }
   }
 
@@ -52,6 +67,13 @@ export default function Results({ drill }) {
     );
   }
 
+  // Get categories with data for made/missed drills
+  const categoriesWithData = drill.scoring_type === 'made_missed' && stats.by_category
+    ? Object.keys(stats.by_category)
+    : [];
+
+  const currentStats = selectedCategory === 'overall' ? stats : (stats.by_category?.[selectedCategory] || {});
+
   // Prepare chart data
   const chartData = progression.map((session, idx) => ({
     session: idx + 1,
@@ -71,21 +93,56 @@ export default function Results({ drill }) {
         <p className="session-count">{stats.total_sessions} sessions completed</p>
       </div>
 
+      {/* Category Selector for made/missed drills */}
+      {drill.scoring_type === 'made_missed' && drill.categories.length > 1 && (
+        <div className="category-filter">
+          <button
+            className={`filter-pill ${selectedCategory === 'overall' ? 'active' : ''}`}
+            onClick={() => setSelectedCategory('overall')}
+          >
+            Overall
+          </button>
+          {drill.categories.map(cat => {
+            const hasData = categoriesWithData.includes(cat);
+            return (
+              <button
+                key={cat}
+                className={`filter-pill ${selectedCategory === cat ? 'active' : ''} ${!hasData ? 'disabled' : ''}`}
+                onClick={() => hasData && setSelectedCategory(cat)}
+                disabled={!hasData}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <div className="stats-overview">
-        <h3>Overall Statistics</h3>
+        <h3>
+          {selectedCategory === 'overall' ? 'Overall Statistics' : `${selectedCategory} Statistics`}
+        </h3>
         <div className="stats-grid">
           {drill.scoring_type === 'made_missed' && (
             <>
               <div className="stat-card">
-                <div className="stat-value">{stats.total_attempts}</div>
+                <div className="stat-value">
+                  {selectedCategory === 'overall' ? stats.total_attempts : currentStats.attempts || 0}
+                </div>
                 <div className="stat-label">Total Attempts</div>
               </div>
               <div className="stat-card">
-                <div className="stat-value">{stats.total_made}</div>
+                <div className="stat-value">
+                  {selectedCategory === 'overall' ? stats.total_made : currentStats.made || 0}
+                </div>
                 <div className="stat-label">Made</div>
               </div>
               <div className="stat-card">
-                <div className="stat-value">{stats.success_rate.toFixed(1)}%</div>
+                <div className="stat-value">
+                  {selectedCategory === 'overall'
+                    ? stats.success_rate.toFixed(1)
+                    : (currentStats.success_rate || 0).toFixed(1)}%
+                </div>
                 <div className="stat-label">Success Rate</div>
               </div>
             </>
@@ -105,7 +162,7 @@ export default function Results({ drill }) {
           )}
         </div>
 
-        {drill.scoring_type === 'made_missed' && stats.by_category && (
+        {selectedCategory === 'overall' && drill.scoring_type === 'made_missed' && stats.by_category && (
           <div className="by-category">
             <h4>By Category</h4>
             {Object.entries(stats.by_category).map(([cat, data]) => (
