@@ -197,18 +197,21 @@ export default function DataEntry({ drill, onComplete }) {
 
       {drill.categories.length > 1 && (
         <div className="category-selector">
-          {drill.categories.map(cat => (
-            <button
-              key={cat}
-              className={`category-btn ${currentCategory === cat ? 'active' : ''}`}
-              onClick={() => setCurrentCategory(cat)}
-            >
-              {cat}
-              {categoryResults.length > 0 && (
-                <span className="count-badge">{categoryResults.length}</span>
-              )}
-            </button>
-          ))}
+          {drill.categories.map(cat => {
+            const catResults = results.filter(r => r.category === cat);
+            return (
+              <button
+                key={cat}
+                className={`category-btn ${currentCategory === cat ? 'active' : ''}`}
+                onClick={() => setCurrentCategory(cat)}
+              >
+                {cat}
+                {catResults.length > 0 && (
+                  <span className="count-badge">{catResults.length}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 

@@ -115,6 +115,49 @@ export default function Results({ drill }) {
 
       {progression.length > 0 && (
         <div className="progression">
+          <h3>Progress Over Time</h3>
+
+          {/* Visual Progress Chart */}
+          <div className="progress-chart">
+            {drill.scoring_type === 'made_missed' && (
+              <div className="chart-bars">
+                {progression.map((session, idx) => (
+                  <div key={session.session_id} className="chart-bar-wrapper">
+                    <div className="chart-bar-container">
+                      <div
+                        className="chart-bar"
+                        style={{ height: `${session.success_rate}%` }}
+                        title={`${session.success_rate.toFixed(1)}%`}
+                      />
+                    </div>
+                    <div className="chart-label">{progression.length - idx}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {drill.scoring_type === 'stroke_count' && (
+              <div className="chart-bars">
+                {progression.map((session, idx) => {
+                  const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
+                  const barHeight = maxStrokes > 0 ? (session.average_strokes / maxStrokes) * 100 : 0;
+                  return (
+                    <div key={session.session_id} className="chart-bar-wrapper">
+                      <div className="chart-bar-container">
+                        <div
+                          className="chart-bar stroke-bar"
+                          style={{ height: `${barHeight}%` }}
+                          title={`${session.average_strokes.toFixed(2)} avg`}
+                        />
+                      </div>
+                      <div className="chart-label">{progression.length - idx}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <h3>Session History</h3>
           <div className="progression-list">
             {progression.map((session, idx) => (

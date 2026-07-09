@@ -14,7 +14,7 @@ if not exist "node_modules\" (
         echo.
         echo ERROR: Failed to install dependencies
         echo.
-        echo Press Enter to exit...
+        echo Press any key to exit...
         pause >nul
         exit /b 1
     )
@@ -60,21 +60,27 @@ echo 🌐 Client: http://localhost:5173
 echo.
 echo ===============================================
 echo.
-echo Press Enter to stop the application...
+echo Press any key to stop the application...
 
-REM Wait for user to press Enter
+REM Wait for user to press any key
 pause >nul
 
 echo.
 echo Stopping Golf Tracker...
 
-REM Kill server and client processes
-taskkill /F /FI "WINDOWTITLE eq *npm run server*" >nul 2>&1
-taskkill /F /FI "WINDOWTITLE eq *npm run client*" >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon ^| find ":3001" ^| find "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
-for /f "tokens=5" %%a in ('netstat -aon ^| find ":5173" ^| find "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
+REM Kill Node.js processes on the specific ports
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3001 ^| findstr LISTENING') do (
+    echo Stopping server process %%a
+    taskkill /F /PID %%a >nul 2>&1
+)
+
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :5173 ^| findstr LISTENING') do (
+    echo Stopping client process %%a
+    taskkill /F /PID %%a >nul 2>&1
+)
 
 echo.
 echo ✓ Golf Tracker stopped.
 echo.
-pause
+echo Press any key to exit...
+pause >nul
