@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { api } from '../../services/api';
 import './Results.css';
 
@@ -50,6 +51,18 @@ export default function Results({ drill }) {
       </div>
     );
   }
+
+  // Prepare chart data
+  const chartData = progression.map((session, idx) => ({
+    session: idx + 1,
+    date: new Date(session.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    value: drill.scoring_type === 'made_missed'
+      ? session.success_rate
+      : session.average_strokes,
+    label: drill.scoring_type === 'made_missed'
+      ? `${session.success_rate.toFixed(1)}%`
+      : `${session.average_strokes.toFixed(2)} avg`
+  }));
 
   return (
     <div className="results">
@@ -117,88 +130,74 @@ export default function Results({ drill }) {
         <div className="progression">
           <h3>Progress Over Time</h3>
 
-          {/* Visual Progress Chart */}
-          <div className="progress-chart">
-            {drill.scoring_type === 'made_missed' && (
-              <>
-                <div className="chart-y-axis">
-                  <div className="y-label">100%</div>
-                  <div className="y-label">75%</div>
-                  <div className="y-label">50%</div>
-                  <div className="y-label">25%</div>
-                  <div className="y-label">0%</div>
-                </div>
-                <div className="chart-container">
-                  <div className="chart-grid">
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                  </div>
-                  <div className="chart-bars">
-                    {progression.map((session, idx) => (
-                      <div key={session.session_id} className="chart-bar-wrapper">
-                        <div className="chart-bar-container">
-                          <div
-                            className="chart-bar"
-                            style={{ height: `${session.success_rate}%` }}
-                            title={`Session ${idx + 1}: ${session.success_rate.toFixed(1)}%`}
-                          />
-                        </div>
-                        <div className="chart-label">{idx + 1}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {drill.scoring_type === 'stroke_count' && (
-              <>
-                <div className="chart-y-axis">
-                  {(() => {
-                    const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
-                    const roundedMax = Math.ceil(maxStrokes);
-                    const step = roundedMax / 4;
-                    return [
-                      <div key="4" className="y-label">{roundedMax.toFixed(1)}</div>,
-                      <div key="3" className="y-label">{(roundedMax - step).toFixed(1)}</div>,
-                      <div key="2" className="y-label">{(roundedMax - step * 2).toFixed(1)}</div>,
-                      <div key="1" className="y-label">{(roundedMax - step * 3).toFixed(1)}</div>,
-                      <div key="0" className="y-label">0</div>
-                    ];
-                  })()}
-                </div>
-                <div className="chart-container">
-                  <div className="chart-grid">
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                    <div className="grid-line"></div>
-                  </div>
-                  <div className="chart-bars">
-                    {progression.map((session, idx) => {
-                      const maxStrokes = Math.max(...progression.map(s => s.average_strokes));
-                      const barHeight = maxStrokes > 0 ? (session.average_strokes / maxStrokes) * 100 : 0;
-                      return (
-                        <div key={session.session_id} className="chart-bar-wrapper">
-                          <div className="chart-bar-container">
-                            <div
-                              className="chart-bar stroke-bar"
-                              style={{ height: `${barHeight}%` }}
-                              title={`Session ${idx + 1}: ${session.average_strokes.toFixed(2)} avg`}
-                            />
+          <div className="chart-wrapper">
+            <ResponsiveContainer width="100%" height={250}>
+              {drill.scoring_type === 'made_missed' ? (
+                <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis
+                    dataKey="session"
+                    label={{ value: 'Session', position: 'insideBottom', offset: -5 }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    label={{ value: 'Success Rate (%)', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="custom-tooltip">
+                            <p className="tooltip-label">Session {payload[0].payload.session}</p>
+                            <p className="tooltip-date">{payload[0].payload.date}</p>
+                            <p className="tooltip-value">{payload[0].payload.label}</p>
                           </div>
-                          <div className="chart-label">{idx + 1}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#2e7d32"
+                    strokeWidth={3}
+                    dot={{ fill: '#2e7d32', r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
+              ) : (
+                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis
+                    dataKey="session"
+                    label={{ value: 'Session', position: 'insideBottom', offset: -5 }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis
+                    label={{ value: 'Avg Strokes', angle: -90, position: 'insideLeft' }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="custom-tooltip">
+                            <p className="tooltip-label">Session {payload[0].payload.session}</p>
+                            <p className="tooltip-date">{payload[0].payload.date}</p>
+                            <p className="tooltip-value">{payload[0].payload.label}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#ff9800" />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
           </div>
 
           <h3>Session History</h3>
@@ -206,7 +205,7 @@ export default function Results({ drill }) {
             {progression.map((session, idx) => (
               <div key={session.session_id} className="session-item">
                 <div className="session-info">
-                  <div className="session-number">Session {progression.length - idx}</div>
+                  <div className="session-number">Session {idx + 1}</div>
                   <div className="session-date">
                     {new Date(session.started_at).toLocaleDateString()}
                   </div>
